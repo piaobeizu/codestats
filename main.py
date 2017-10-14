@@ -4,10 +4,11 @@
 # Email='wangxk1991@gamil.com'
 # Desc: 系统入口文件
 
-from src.Config import Config
-from src.GitLocalHelper import GitLocalHelper
 from src.Core import *
+
+from src.Config import Config
 from src.Log import Log
+from src.helper.GitLocalHelper import GitLocalHelper
 
 
 class Start():
@@ -55,6 +56,7 @@ class Start():
     def start(self):
         Log.info('系统初始化。。。')
         self.init()
+        Log.info('系统开始执行。。。')
         self.run()
         Log.info('执行完成。。。',True)
 
