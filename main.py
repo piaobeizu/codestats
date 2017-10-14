@@ -6,36 +6,33 @@
 
 from src.Config import Config
 from src.GitLocalHelper import GitLocalHelper
-import os
 from src.Core import *
 from src.Log import Log
 
 
 class Start():
-    config = None
     conf = {}
-
     # 初始化系统
     @classmethod
     def init(self):
-        # 加载配置
-        self.config = Config()
-        self.conf = self.config.get()
-        # 加载日志模块
-        log = Log()
-        # 创建缓存文件夹
+        # 加载全局变量模块
+        # 加载配置模块
+        Config.init()
+        self.conf = Config.get()
+        # 创建缓存文件夹和日志文件夹
         try:
             os.makedirs(self.conf['system']['default_cache'])
+            os.makedirs("/home/steven/develop/code/pycharm/codestats/log/")
         except OSError:
             pass
         if not os.path.isdir(self.conf['system']['default_cache']):
-            print('FATAL: Output path is not a directory or does not exist')
+            Log.error('FATAL: Output path is not a directory or does not exist')
             sys.exit(1)
 
     # 执行函数
     @classmethod
     def run(self):
-        sources = self.config.get('system.code_source')
+        sources = Config.get('system.code_source')
         for source in sources:
 
             if source['enable'] is True:
@@ -56,9 +53,10 @@ class Start():
     # 入口函数
     @classmethod
     def start(self):
+        Log.info('系统初始化。。。')
         self.init()
         self.run()
-
+        Log.info('执行完成。。。',True)
 
 if __name__ == '__main__':
     Start.start()

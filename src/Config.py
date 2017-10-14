@@ -5,19 +5,22 @@
 # Desc: 配置处理模块
 import config.settings as settings
 import logging
+import os
 
 
 class Config():
     builtin = ['system']
 
-    def __init__(self):
+    @classmethod
+    def init(self):
         global config
         config = {}
-        self.load()
+        Config.load()
 
     # 配置文件加载
     # path : config module path
     # name : key of dict
+    @classmethod
     def load(self):
         # 加载系统配置
         config['system'] = settings.system

@@ -3,6 +3,7 @@
 # Created by wxk on 2017/10/13 上午10:25
 # Email='wangxk1991@gamil.com'
 # Desc: 系统配置项
+import os
 
 system = {
     # 代码源
@@ -32,7 +33,7 @@ system = {
             'type': 'git-local',
             'io': [
                 {
-                    'input': '/Users/steven/develop/code/pycharm/codestats',
+                    'input': '/home/steven/develop/code/pycharm/codestats',
                     'output': {
                         'web': '',  # 生成web项目的目录地址
                         'email': ['897994454@qq.com'],  # 发送email的地址
@@ -63,7 +64,7 @@ system = {
         },
     ],
     'default_cache': '/tmp/codestat',
-    'debug': True
+    'abspath':os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 }
 
 config = [
