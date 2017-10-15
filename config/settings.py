@@ -64,7 +64,8 @@ system = {
         },
     ],
     'default_cache': '/tmp/codestat',
-    'abspath':os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    'abspath':os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    'email_sender':'897994454@qq.com'
 }
 
 config = [

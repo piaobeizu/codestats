@@ -9,10 +9,12 @@ from src.Core import *
 from src.Config import Config
 from src.Log import Log
 from src.helper.GitLocalHelper import GitLocalHelper
+from src.notify.Email import Email
 
 
 class Start():
     conf = {}
+
     # 初始化系统
     @classmethod
     def init(self):
@@ -48,7 +50,16 @@ class Start():
                         helper.saveCache(cachefile=cachefile)
                         helper.refine()
                         os.chdir(rundir)
-                        print(helper.authors)
+                        if 'web' in io['output'].keys() and io['output']['web'].strip() != '':
+                            pass
+                        if 'email' in io['output'].keys() and len(io['output']['email']) != 0:
+                            email  = Email()
+                            email.create(helper)
+                            email.push(self.conf['system']['email_sender'],io['output']['email'])
+                            pass
+                        if 'sms' in io['output'].keys() and len(io['output']['sms']) != 0:
+                            pass
+                        print(io)
             pass
 
     # 入口函数
@@ -58,7 +69,8 @@ class Start():
         self.init()
         Log.info('系统开始执行。。。')
         self.run()
-        Log.info('执行完成。。。',True)
+        Log.info('执行完成。。。', True)
+
 
 if __name__ == '__main__':
     Start.start()

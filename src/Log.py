@@ -122,13 +122,13 @@ class Log():
         self.log.warning(Log.makeText(fn,lno,'WARNING',text,linefeed))
 
     @classmethod
-    def error(self,text):
+    def error(self,text,linefeed=False):
         Log.init()
         try:
             fn, lno, func, sinfo = Log.findCaller()
         except ValueError: # pragma: no cover
             fn, lno, func = "(unknown file)", 0, "(unknown function)"
-        self.log.error(Log.makeText(fn,lno,'ERROR',text,True))
+        self.log.error(Log.makeText(fn,lno,'ERROR',text,linefeed))
 
     @classmethod
     def findCaller(self, stack_info=False):

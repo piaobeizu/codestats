@@ -4,4 +4,11 @@
 # Email="wangxk1991@gamil.com"
 # Desc: 通知基类
 class Notify():
+    def __init__(self):
+        pass
+
+    # 创建通知内容
+    def create(self, data):
+        self.data = data
+
     pass
