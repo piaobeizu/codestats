@@ -44,7 +44,7 @@ system = {
                     'input': '/Users/steven/develop/code/intellij/rootech/root-portal',
                     'output': {
                         'web': '',  # 生成web项目的目录地址
-                        'email': ['897994454@qq.com'],  # 发送email的地址
+                        'email': ['897994454@qq.com','18611470725@163.com'],  # 发送email的地址
                         'sms': []  # 发送sms短信通知的电话号码
                     }
                 }
@@ -74,7 +74,10 @@ system = {
     'email': {
         'email_sender': '3074677543@qq.com',
         'default_email_server': 'smtp.qq.com',
-        'port': 465
+        'port': 465,
+        'from':'根云团队->系统->代码监控',
+        'to':'根云团队独一无二的你',
+        'mime_text':'代码统计报告'
     }
 }
 

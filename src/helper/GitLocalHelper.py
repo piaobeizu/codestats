@@ -8,6 +8,7 @@ import re
 
 from src.Core import *
 from src.Helper import Helper
+from src.Log import Log
 
 
 class GitLocalHelper(Helper):
@@ -217,7 +218,7 @@ class GitLocalHelper(Helper):
             try:
                 self.files_by_stamp[int(stamp)] = int(files)
             except ValueError:
-                print('Warning: failed to parse line "%s"' % line)
+                Log.warning('Warning: failed to parse line "%s"' % line)
 
         # extensions
         self.extensions = {}  # extension -> files, lines
@@ -244,7 +245,7 @@ class GitLocalHelper(Helper):
             try:
                 self.extensions[ext]['lines'] += self.getLinesInBlob(sha1)
             except:
-                print('Warning: Could not count lines for file "%s"' % line)
+                Log.warning('Warning: Could not count lines for file "%s"' % line)
 
         # line statistics
         # outputs:
@@ -275,9 +276,9 @@ class GitLocalHelper(Helper):
                         self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
                         self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
                     except ValueError:
-                        print('Warning: unexpected line "%s"' % line)
+                        Log.warning('Warning: unexpected line "%s"' % line)
                 else:
-                    print('Warning: unexpected line "%s"' % line)
+                    Log.warning('Warning: unexpected line "%s"' % line)
             else:
                 numbers = re.findall('\d+', line)
                 if len(numbers) == 3:
@@ -287,7 +288,7 @@ class GitLocalHelper(Helper):
                     self.total_lines_added += inserted
                     self.total_lines_removed += deleted
                 else:
-                    print('Warning: failed to handle line "%s"' % line)
+                    Log.warning('Warning: failed to handle line "%s"' % line)
                     (files, inserted, deleted) = (0, 0, 0)
                     # self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
         self.total_lines = total_lines

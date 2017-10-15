@@ -43,24 +43,25 @@ class Start():
                     rundir = os.getcwd()
                     helper = GitLocalHelper()
                     for io in source['io']:
+                        Log.info('创建缓存文件。。。')
                         cachefile = os.path.join(self.conf['default_cache'], md5(io['input']))
                         os.chdir(io['input'])
                         helper.loadCache(cachefile)
+                        Log.info('开始统计。。。')
                         helper.collect(io['input'], conf=self.conf['git'])
                         helper.saveCache(cachefile=cachefile)
+                        Log.info('提炼统计结果。。。')
                         helper.refine()
                         os.chdir(rundir)
                         if 'web' in io['output'].keys() and io['output']['web'].strip() != '':
                             pass
                         if 'email' in io['output'].keys() and len(io['output']['email']) != 0:
-                            Log.info('开始发送邮件')
                             email  = Email()
                             email.create(helper)
                             email.push(self.conf['email']['email_sender'],io['output']['email'])
                             pass
                         if 'sms' in io['output'].keys() and len(io['output']['sms']) != 0:
                             pass
-                        print(io)
             pass
 
     # 入口函数

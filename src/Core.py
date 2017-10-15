@@ -9,6 +9,7 @@ import subprocess
 import platform
 import os
 import hashlib
+from src.Log import Log
 
 exectime_internal = 0.0
 exectime_external = 0.0
@@ -20,7 +21,7 @@ def getpipeoutput(cmds, quiet=False):
     global exectime_external
     start = time.time()
     if not quiet and ON_LINUX and os.isatty(1):
-        print('>> ' + ' | '.join(cmds), sys.stdout.flush())
+        Log.info('>> ' + ' | '.join(cmds), sys.stdout.flush())
     p = subprocess.Popen(cmds[0], stdout=subprocess.PIPE, shell=True)
     processes = [p]
     for x in cmds[1:]:
@@ -32,7 +33,7 @@ def getpipeoutput(cmds, quiet=False):
     end = time.time()
     if not quiet:
         if ON_LINUX and os.isatty(1):
-            print('\n[%.5f] >> %s' % (end - start, ' | '.join(cmds)))
+            Log.info('\n[%.5f] >> %s' % (end - start, ' | '.join(cmds)))
     exectime_external += (end - start)
     return output.rstrip('\n')
 
