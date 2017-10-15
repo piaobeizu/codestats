@@ -21,14 +21,14 @@ class Start():
         # 加载全局变量模块
         # 加载配置模块
         Config.init()
-        self.conf = Config.get()
+        self.conf = Config.get('system')
         # 创建缓存文件夹和日志文件夹
         try:
-            os.makedirs(self.conf['system']['default_cache'])
-            os.makedirs("/home/steven/develop/code/pycharm/codestats/log/")
+            os.makedirs(self.conf['default_cache'])
+            os.makedirs("./log/")
         except OSError:
             pass
-        if not os.path.isdir(self.conf['system']['default_cache']):
+        if not os.path.isdir(self.conf['default_cache']):
             Log.error('FATAL: Output path is not a directory or does not exist')
             sys.exit(1)
 
@@ -43,7 +43,7 @@ class Start():
                     rundir = os.getcwd()
                     helper = GitLocalHelper()
                     for io in source['io']:
-                        cachefile = os.path.join(self.conf['system']['default_cache'], md5(io['input']))
+                        cachefile = os.path.join(self.conf['default_cache'], md5(io['input']))
                         os.chdir(io['input'])
                         helper.loadCache(cachefile)
                         helper.collect(io['input'], conf=self.conf['git'])
@@ -53,9 +53,10 @@ class Start():
                         if 'web' in io['output'].keys() and io['output']['web'].strip() != '':
                             pass
                         if 'email' in io['output'].keys() and len(io['output']['email']) != 0:
+                            Log.info('开始发送邮件')
                             email  = Email()
                             email.create(helper)
-                            email.push(self.conf['system']['email_sender'],io['output']['email'])
+                            email.push(self.conf['email']['email_sender'],io['output']['email'])
                             pass
                         if 'sms' in io['output'].keys() and len(io['output']['sms']) != 0:
                             pass

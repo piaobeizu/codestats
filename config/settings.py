@@ -32,22 +32,22 @@ system = {
         {
             'type': 'git-local',
             'io': [
-                {
-                    'input': '/home/steven/develop/code/pycharm/codestats',
-                    'output': {
-                        'web': '',  # 生成web项目的目录地址
-                        'email': ['897994454@qq.com'],  # 发送email的地址
-                        'sms': []  # 发送sms短信通知的电话号码
-                    }
-                },
                 # {
-                #     'input': '/Users/steven/develop/code/intellij/rootech/root-portal',
+                #     'input': '/home/steven/develop/code/pycharm/codestats',
                 #     'output': {
                 #         'web': '',  # 生成web项目的目录地址
                 #         'email': ['897994454@qq.com'],  # 发送email的地址
                 #         'sms': []  # 发送sms短信通知的电话号码
                 #     }
-                # }
+                # },
+                {
+                    'input': '/Users/steven/develop/code/intellij/rootech/root-portal',
+                    'output': {
+                        'web': '',  # 生成web项目的目录地址
+                        'email': ['897994454@qq.com'],  # 发送email的地址
+                        'sms': []  # 发送sms短信通知的电话号码
+                    }
+                }
             ],
             'enable': True
         },
@@ -64,8 +64,18 @@ system = {
         },
     ],
     'default_cache': '/tmp/codestat',
-    'abspath':os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'email_sender':'897994454@qq.com'
+    'abspath': os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    'git': {
+        'max_domains': 10,
+        'max_ext_length': 10,
+        'style': 'gitstats.css',
+        'max_authors': 20,
+    },
+    'email': {
+        'email_sender': '3074677543@qq.com',
+        'default_email_server': 'smtp.qq.com',
+        'port': 465
+    }
 }
 
 config = [
