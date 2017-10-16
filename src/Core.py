@@ -33,7 +33,7 @@ def getpipeoutput(cmds, quiet=False):
     end = time.time()
     if not quiet:
         if ON_LINUX and os.isatty(1):
-            Log.info('\n[%.5f] >> %s' % (end - start, ' | '.join(cmds)))
+            Log.info('[%.5f] >> %s' % (end - start, ' | '.join(cmds)))
     exectime_external += (end - start)
     return output.rstrip('\n')
 

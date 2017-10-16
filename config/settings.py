@@ -32,19 +32,11 @@ system = {
         {
             'type': 'git-local',
             'io': [
-                # {
-                #     'input': '/home/steven/develop/code/pycharm/codestats',
-                #     'output': {
-                #         'web': '',  # 生成web项目的目录地址
-                #         'email': ['897994454@qq.com'],  # 发送email的地址
-                #         'sms': []  # 发送sms短信通知的电话号码
-                #     }
-                # },
                 {
-                    'input': '/Users/steven/develop/code/intellij/rootech/root-portal',
+                    'input': '',
                     'output': {
                         'web': '',  # 生成web项目的目录地址
-                        'email': ['897994454@qq.com','18611470725@163.com'],  # 发送email的地址
+                        'email': [],  # 发送email的地址
                         'sms': []  # 发送sms短信通知的电话号码
                     }
                 }
@@ -70,15 +62,17 @@ system = {
         'max_ext_length': 10,
         'style': 'gitstats.css',
         'max_authors': 20,
+        'default_branch': 'dev'
     },
     'email': {
-        'email_sender': '3074677543@qq.com',
-        'default_email_server': 'smtp.qq.com',
-        'port': 465,
-        'from':'根云团队->系统->代码监控',
-        'to':'根云团队独一无二的你',
-        'mime_text':'代码统计报告'
-    }
+        'email_sender': '',
+        'default_email_server': 'smtp.163.com',
+        'port': 25,
+        'from': '',
+        'to': u'',
+        'receiver_cc': [],
+        'subject': ''
+    },
 }
 
 config = [

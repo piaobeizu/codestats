@@ -10,6 +10,7 @@ from src.Config import Config
 from src.Log import Log
 from src.helper.GitLocalHelper import GitLocalHelper
 from src.notify.Email import Email
+from src.Core import getpipeoutput
 
 
 class Start():
@@ -37,28 +38,30 @@ class Start():
     def run(self):
         sources = Config.get('system.code_source')
         for source in sources:
-
             if source['enable'] is True:
                 if source['type'] == 'git-local':
                     rundir = os.getcwd()
                     helper = GitLocalHelper()
                     for io in source['io']:
-                        Log.info('创建缓存文件。。。')
+                        Log.info('create cache file...')
                         cachefile = os.path.join(self.conf['default_cache'], md5(io['input']))
                         os.chdir(io['input'])
+                        # 从线上拉取最新的代码
+                        Log.info('pull the latest code...')
+                        getpipeoutput(['git pull origin %s' % (self.conf['git']['default_branch'])])
                         helper.loadCache(cachefile)
-                        Log.info('开始统计。。。')
+                        Log.info('start statistic...')
                         helper.collect(io['input'], conf=self.conf['git'])
                         helper.saveCache(cachefile=cachefile)
-                        Log.info('提炼统计结果。。。')
+                        Log.info('refine statistic result...')
                         helper.refine()
                         os.chdir(rundir)
                         if 'web' in io['output'].keys() and io['output']['web'].strip() != '':
                             pass
                         if 'email' in io['output'].keys() and len(io['output']['email']) != 0:
-                            email  = Email()
+                            email = Email()
                             email.create(helper)
-                            email.push(self.conf['email']['email_sender'],io['output']['email'])
+                            email.push(self.conf['email']['email_sender'], io['output']['email'])
                             pass
                         if 'sms' in io['output'].keys() and len(io['output']['sms']) != 0:
                             pass
@@ -67,11 +70,11 @@ class Start():
     # 入口函数
     @classmethod
     def start(self):
-        Log.info('系统初始化。。。')
+        Log.info('system init...')
         self.init()
-        Log.info('系统开始执行。。。')
+        Log.info('system begin...')
         self.run()
-        Log.info('执行完成。。。', True)
+        Log.info('finish.', True)
 
 
 if __name__ == '__main__':

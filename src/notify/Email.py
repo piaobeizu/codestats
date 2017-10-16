@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from src.Log import Log
 from src.Config import Config
+import src.Core as Core
 import time
 
 
@@ -22,47 +23,63 @@ class Email(Notify):
 
     def create(self, helper):
         Notify.create(self, helper)
-        self.message = MIMEText(self.emailConf['mime_text'] + time.strftime("%Y-%m-%d", time.localtime()), 'html',
-                                'utf-8')
-        self.message['From'] = Header(self.emailConf['from'], 'utf-8')
-        self.message['To'] = Header(self.emailConf['to'], 'utf-8')
-        subject = self.makeSubject(helper=helper)
+        self.message = MIMEText(self.makeMimeText(helper), 'html', 'utf-8')
+        self.message['From'] = self.emailConf['from']  # 163邮箱，此处不能用header函数，下面的to也是一样
+        self.message['To'] = self.emailConf['to']
+        subject = self.emailConf['subject'] + '[' + time.strftime("%Y/%m/%d", time.localtime()) + ']'
         self.message['Subject'] = Header(subject, 'utf-8')
+        self.message['Cc'] = ";".join(self.emailConf['receiver_cc'])
         pass
 
     def push(self, sender=None, receivers=[]):
         if sender == None:
             sender = self.emailConf['email_sender']
         if len(receivers) == 0:
-            Log.error('邮件接收方为空。', False)
-        smtpObj = smtplib.SMTP_SSL(self.emailConf['default_email_server'], port=self.emailConf['port'])
+            Log.error('receivers of email is empty...', False)
+        # smtpObj = smtplib.SMTP_SSL(self.emailConf['default_email_server'], port=self.emailConf['port'])
+        # smtpObj.set_debuglevel(1)
+        # smtpObj.ehlo(self.emailConf['default_email_server'])
+        # smtpObj.login(sender, '')
+        smtpObj = smtplib.SMTP(self.emailConf['default_email_server'], port=self.emailConf['port'])
         smtpObj.set_debuglevel(1)
-        smtpObj.ehlo(self.emailConf['default_email_server'])
-        smtpObj.login(sender, 'nzobtmadxgvwddcf')
+        smtpObj.login(sender, '')
         try:
-            Log.info('开始发送邮件...')
+            Log.info('start send email...')
             smtpObj.sendmail(sender, receivers, self.message.as_string())
-            Log.info("邮件发送成功!!!")
+            # smtpObj.sendmail(sender, ";".join(receivers), self.message.as_string())
+            Log.info("email send success...")
         except smtplib.SMTPException as e:
-            Log.error(("Error: 无法发送邮件。错误信息：%s") % e.strerror, False)
-            smtpObj.close()
+            Log.error(("Error: email send failed, error info is : %s") % e, False)
         finally:
             smtpObj.quit()
         pass
 
     # 创建邮件发送内容
-    def makeSubject(self, helper):
-        content = ''
-        # 生成List of Authors
-        content += self.html_header(2, 'List of Authors') + '<table class="authors sortable" id="authors">' + \
-                   '<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>'
-
+    def makeMimeText(self, helper):
+        content = '<style>table,table tr th, table tr td { border:1px solid #0094ff; }table { width: 90%; min-height: 25px; line-height: 25px; text-align: center; border-collapse: collapse;}</style>'
+        # 生成author of day
+        content += self.html_header(2, 'Author of day') + '<table style="border:1px solid #F00;">' + \
+                   '<tr><th>Author</th><th>Add</th><th>Delete</th><th>Commits</th></tr>'
         for author in helper.getAuthors(Config.get('system.git')['max_authors']):
-            info = helper.getAuthorInfo(author)
-            content += '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (
-            author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'],
-            info['date_first'], info['date_last'], info['timedelta'], info['active_days'], info['place_by_commits'])
+            info = helper.author_of_day[author]
+            content += '<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (
+            author, info['lines_added'], info['lines_removed'], info['commit'])
+        content += "</table>"
+        # 生成author of month
+        content += self.html_header(2, 'Author of Month') + '<table style="border:1px solid #F00;">' + \
+                   '<tr><th>Month</th><th>Author</th><th>Commits (%)</th><th class="unsortable">Next top 5</th></tr>'
+        for yymm in reversed(sorted(helper.author_of_month.keys())):
+            authordict = helper.author_of_month[yymm]
+            authors = Core.getkeyssortedbyvalues(authordict)
+            authors.reverse()
+            commits = helper.author_of_month[yymm][authors[0]]
+            next = ', '.join(authors[1:5])
+            content += '<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td></tr>' % (
+                yymm, authors[0], commits, (100.0 * commits) / helper.commits_by_month[yymm],
+                helper.commits_by_month[yymm],
+                next)
+        content += "</table>"
+
         return content
-        pass
 
-
+    pass

@@ -9,6 +9,7 @@ import re
 from src.Core import *
 from src.Helper import Helper
 from src.Log import Log
+import datetime
 
 
 class GitLocalHelper(Helper):
@@ -31,6 +32,7 @@ class GitLocalHelper(Helper):
         self.activity_by_hour_of_week_busiest = 0
         self.activity_by_year_week = {}  # yy_wNN -> commits
         self.activity_by_year_week_peak = 0
+        self.activity_by_every_day = {}  #
 
         self.authors = {}  # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
@@ -40,8 +42,10 @@ class GitLocalHelper(Helper):
         # author of the month
         self.author_of_month = {}  # month -> author -> commits
         self.author_of_year = {}  # year -> author -> commits
+        self.author_of_day = {}  # year -> author -> commits
         self.commits_by_month = {}  # month -> commits
         self.commits_by_year = {}  # year -> commits
+        self.commits_by_day = {}  # year -> commits
         self.first_commit_stamp = 0
         self.last_commit_stamp = 0
         self.last_active_day = None
@@ -65,7 +69,7 @@ class GitLocalHelper(Helper):
 
             tag = tag.replace('refs/tags/', '')
             output = getpipeoutput(['git log "%s" --pretty=format:"%%at %%an" -n 1' % hash])
-            
+
             if len(output) > 0:
                 parts = output.split(' ')
                 stamp = 0
@@ -79,7 +83,8 @@ class GitLocalHelper(Helper):
 
         # collect info on tags, starting from latest
         tags_sorted_by_date_desc = list(map(lambda el: el[1],
-                                       reversed(sorted(map(lambda el: (el[1]['date'], el[0]), self.tags.items())))))
+                                            reversed(
+                                                sorted(map(lambda el: (el[1]['date'], el[0]), self.tags.items())))))
         prev = None
         for tag in reversed(tags_sorted_by_date_desc):
             cmd = 'git shortlog -s "%s"' % tag
@@ -252,11 +257,12 @@ class GitLocalHelper(Helper):
         #  N files changed, N insertions (+), N deletions(-)
         # <stamp> <author>
         self.changes_by_date = {}  # stamp -> { files, ins, del }
-        lines = getpipeoutput(['git log --shortstat --pretty=format:"%at %an"']).split('\n')
-        lines.reverse()
-        files = 0;
-        inserted = 0;
-        deleted = 0;
+
+        # self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
+        lines = self.getLinesByTime()
+        files = 0
+        inserted = 0
+        deleted = 0
         total_lines = 0
         author = None
         for line in lines:
@@ -290,8 +296,52 @@ class GitLocalHelper(Helper):
                 else:
                     Log.warning('Warning: failed to handle line "%s"' % line)
                     (files, inserted, deleted) = (0, 0, 0)
-                    # self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
         self.total_lines = total_lines
+        # 统计每个人每天的任务量
+        # 初始化author_of_day数组
+        for name in self.authors.keys():
+            self.author_of_day[name] = {}
+            self.author_of_day[name]['lines_added'] = 0
+            self.author_of_day[name]['lines_removed'] = 0
+            self.author_of_day[name]['commit'] = 0
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        lines = self.getLinesByTime(yesterday.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'))
+        for line in lines:
+            if len(line) == 0:
+                continue
+            # <stamp> <author>
+            if line.find('files changed,') == -1:
+                pos = line.find(' ')
+                if pos != -1:
+                    try:
+                        (stamp, author) = (int(line[:pos]), line[pos + 1:])
+                        if author in self.authors:
+                            self.author_of_day[author]['commit'] = self.author_of_day[author].get('commit',0) + 1
+                            self.author_of_day[author]['lines_added'] = self.author_of_day[author].get('lines_added',
+                                                                                                       0) + inserted
+                            self.author_of_day[author]['lines_removed'] = self.author_of_day[author].get(
+                                'lines_removed',
+                                0) + deleted
+                    except ValueError:
+                        Log.warning('Warning: unexpected line "%s"' % line)
+                else:
+                    Log.warning('Warning: unexpected line "%s"' % line)
+        self.total_lines = total_lines
+
+    # start:%Y-%m-%d
+    def getLinesByTime(self, start=None, end=None):
+        if start == None and end == None:
+            lines = getpipeoutput(['git log --shortstat --pretty=format:"%at %an"']).split('\n')
+        elif start == None and end != None:
+            lines = getpipeoutput(['git log --shortstat --pretty=format:"%at %an" --until=%s' % (start)]).split('\n')
+        elif start != None and end == None:
+            lines = getpipeoutput(['git log --shortstat --pretty=format:"%at %an" --since=%s' % (start)]).split('\n')
+        else:
+            lines = getpipeoutput(
+                ['git log --shortstat --pretty=format:"%at %an" --since=' + start + ' --until=' + end]).split('\n')
+        lines.reverse()
+        return lines
 
     def refine(self):
         # authors
